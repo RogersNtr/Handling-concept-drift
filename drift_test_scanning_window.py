@@ -63,7 +63,8 @@ def remove_outlier2(input_data, label_type=None):
     for j in range(len(input_data_copy['Mean'])):
         if mean_data + 4*var_data > input_data_copy['Mean'][j] > mean_data - 4*var_data:
             # print("test", input_data['Mean'][2*j])
-            input_data_copy = input_data_copy.drop([input_data_copy['Mean'][j]])
+            input_data_copy = input_data_copy.drop([j])
+
             count = count + 1
             # print(2*j)
             output_data.append(2*j)
@@ -71,25 +72,20 @@ def remove_outlier2(input_data, label_type=None):
     print(len(input_data['Mean']))
     return input_data_copy
 
+
+def ADWIN(datastream, confidence_interval=None):
+
+
+    return True
+
+
 if __name__ == '__main__':
-    filename = 'f_b_1.pow'
-    # result = load_data(filename)
-    # array_result = np.array(result)
-    # print(array_result.shape)
-    #
-    # plt.figure()
-    # plt.plot(array_result[1:500,3])
-    # plt.show()
-    filename = 'monthly_csv_temp.csv'
+    filename = 'data_set_test_weather/monthly_csv_temp.csv'
     data = pd.DataFrame.from_csv(filename)
     data2 = pd.read_csv(filename)
-    # data_test = data.drop(['Date'], axis=1)
-    A = data2['Mean']==0.48
-    for j in range(len(data2['Mean'])):
-        if data2['Mean'][j] ==0.48:
-            print(j)
 
 
+    print(data2)
     data_GCAG = data2[data2['Source'] == 'GCAG']
     data_GISTEMP = data2[data2['Source'] == 'GISTEMP']
     print(type(data_GCAG['Date'][0]))
@@ -100,6 +96,12 @@ if __name__ == '__main__':
     #     data_GCAG['Date'][2*j] = j
     #     data_GISTEMP['Date'][2*j + 1] = j
     result = remove_outlier2(data2)
+    a = [j for j in range(result.shape[0])]
+    result['index'] = a
+    # print(result)
+    # plt.figure()
+    # plt.plot(result['Mean'])
+    # plt.show()
     # # print(data2)
     # result_GCAG = remove_outlier(data_GCAG, 'GCAG')
     # result_GISTEMP = remove_outlier(data_GISTEMP, 'GISTEMP')
@@ -120,9 +122,25 @@ if __name__ == '__main__':
     # plt.figure(2)
     # plt.plot(data_date_GISTEMP, data_mean_GISTEMP)
     # plt.show()
-    x = np.linspace(-np.pi, np.pi, 1644)
 
-    plt.plot(x, np.sin(4*np.pi*x))
-    plt.show()
+    x = np.linspace(-np.pi, np.pi, 644)
+    # mean_data = stats.mean(x)  # Mean value of the data
+    # var_data = stats.variance(x)  # Variance of the data
+    # A = []
+    # for val in x:
+    #     if mean_data - 2*var_data < val < mean_data + 2*var_data:
+    #         A.append(val)
+    #
+    # print(len(A))
+
+    sin_template = pd.DataFrame(x, columns=['Mean'])
+    result.append(sin_template)
+   #  print(result)
+    # sin_template = remove_outlier2(sin_template)
+    #print(sin_template)
+
+
+    #plt.plot(x, np.sin(4*np.pi*x))
+    #plt.show()
 
 
