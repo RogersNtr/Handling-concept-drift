@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sc
+import pandas as pd
 
 def load_data(filename):
     ''' Load a file, given its name.
@@ -25,5 +26,6 @@ def load_data(filename):
     return result
 
 if __name__ == '__main__':
-    filename =
-    load_data()
+    filename ='Hexapod_dataset/black_flat/f_b_1.pow'
+    result = load_data(filename)
+    print(result)
