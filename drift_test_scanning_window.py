@@ -64,16 +64,37 @@ def remove_outlier2(input_data, label_type=None):
         if mean_data + 4*var_data > input_data_copy['Mean'][j] > mean_data - 4*var_data:
             # print("test", input_data['Mean'][2*j])
             input_data_copy = input_data_copy.drop([j])
-
-            count = count + 1
-            # print(2*j)
-            output_data.append(2*j)
-    print(count)
     print(len(input_data['Mean']))
     return input_data_copy
 
 
 def ADWIN(datastream, confidence_interval=None):
+    """
+
+    :param datastream: The datastream of Examples
+    :param confidence_interval: The level of confidence to the detection made
+    :return: W, a window of examples
+    """
+    # Initialize the Window
+    height = datastream.shape[0]
+    rand = np.random.randint(1, 52)
+    rand = 2
+    W = datastream[1:rand]
+    for xi in range(rand, datastream.shape[0]):
+        df2 = pd.DataFrame([[xi + 1, "GISTEMP", "2012-10-27", datastream['Mean'][xi], rand + 1]], columns=["Unnamed: 0", "Source", "Date", "Mean", "index"])
+        W = W.append(df2)
+
+        # Splitting into 2 sets W0, W1
+        W0 = W
+        W1 = datastream[xi:height]
+
+        # Compute the avarage
+        mean_W0_hat = np.mean(W0)
+        mean_W1_hat = np.mean(W1)
+
+        #
+        
+
 
 
     return True
@@ -85,7 +106,7 @@ if __name__ == '__main__':
     data2 = pd.read_csv(filename)
 
 
-    print(data2)
+    # print(data2)
     data_GCAG = data2[data2['Source'] == 'GCAG']
     data_GISTEMP = data2[data2['Source'] == 'GISTEMP']
     print(type(data_GCAG['Date'][0]))
@@ -98,6 +119,7 @@ if __name__ == '__main__':
     result = remove_outlier2(data2)
     a = [j for j in range(result.shape[0])]
     result['index'] = a
+
     # print(result)
     # plt.figure()
     # plt.plot(result['Mean'])
@@ -134,11 +156,16 @@ if __name__ == '__main__':
     # print(len(A))
 
     sin_template = pd.DataFrame(x, columns=['Mean'])
-    result.append(sin_template)
-   #  print(result)
+    # result.append(sin_template)
+    # result.to_csv('test_df_csv.csv')
+    print(result)
     # sin_template = remove_outlier2(sin_template)
     #print(sin_template)
+    result.to_csv('test_df_csv.csv')
+    data3 = pd.read_csv('test_df_csv.csv')
+    print(data3[1:100])
 
+    print('random', np.random.randint(1, 51))
 
     #plt.plot(x, np.sin(4*np.pi*x))
     #plt.show()
