@@ -56,7 +56,7 @@ def remove_outlier2(input_data):
     input_data_copy = input_data.copy()
     a = []
     for j in range(len(input_data_copy['Mean'])):
-        if mean_data - 4*var_data < input_data_copy['Mean'][j] < mean_data + 4*var_data:
+        if mean_data + 4*var_data < input_data_copy['Mean'][j] < mean_data - 4*var_data:
             # a.append(j)
             input_data_copy = input_data_copy.drop([j]) # Remove the corresponding rows
     # A = input_data_copy[a]
@@ -144,19 +144,9 @@ if __name__ == '__main__':
     #     data_GISTEMP['Date'][2*j + 1] = j
 
     # Remove outlier and add modify indexes
-    result = remove_outlier2(data2)
-    print("rmv_outlier 2", result.shape)
-    a = [j for j in range(result.shape[0])]
-    result['index'] = a
+    # result = remove_outlier2(data2)
+    # print("rmv_outlier 2", result.shape)
 
-    # Plotting the original data
-    # print(result)
-    plt.figure(1)
-    plt.plot(result['Mean'])
-    plt.title("Original Data with outliers removes")
-    plt.ylabel("Mean temperature distribution")
-    plt.draw()
-    plt.pause(20)
 
     # # print(data2)
     result_GCAG = remove_outlier(data_GCAG, 'GCAG')
@@ -164,45 +154,50 @@ if __name__ == '__main__':
 
     # # # GCAG data
     data_mean_GCAG = data_GCAG['Mean'][result_GCAG]
-    data_date_GCAG = data_GCAG['Date'][result_GCAG]
-    print("rmv_outlier", data_mean_GCAG.shape)
+    data_mean_GCAG = data_mean_GCAG.tolist()  # Convert to list, to later convert to DataFrame
+    data_mean_GCAG = pd.DataFrame(data_mean_GCAG) #
+
+    # Adding the last index to the mean column extracted
+    # index = [j for j in range(data_mean_GCAG.shape[0])]
+    # data_mean_GCAG['index'] = index
+    # data_mean_GCAG = data_mean_GCAG.reindex(index)
+    # print('data', data_mean_GCAG.shape[0])
+    print(data_mean_GCAG)
 
     # # # GISTEMP data
-    data_mean_GISTEMP = data_GISTEMP['Mean'][result_GISTEMP]
-    data_date_GISTEMP = data_GISTEMP['Date'][result_GISTEMP]
+    # data_mean_GISTEMP = data_GISTEMP['Mean'][result_GISTEMP]
+    # data_date_GISTEMP = data_GISTEMP['Date'][result_GISTEMP]
+
+    # Plotting the original data
+    plt.figure(1)
+    plt.plot(data_mean_GCAG)
+    plt.title("Original Data with outliers removes")
+    plt.ylabel("Mean temperature distribution")
+    plt.draw()
+    plt.pause(20)
 
     # # Plotting to see how it looks.
     plt.figure(2)
     plt.plot(data_mean_GCAG)
-    plt.title("Test")
+    plt.title("After removing outliers... using label type")
     plt.draw()
     plt.pause(20)
-    # # plt.pause(10)
-    # # plt.figure(2)
-    # # plt.plot(data_date_GISTEMP, data_mean_GISTEMP)
-    # # plt.show()
-    #
-    # x = np.linspace(-np.pi, np.pi, 644)
-    #
-    # # mean_data = stats.mean(x)  # Mean value of the data
-    # # var_data = stats.variance(x)  # Variance of the data
-    # # A = []
-    # # for val in x:
-    # #     if mean_data - 2*var_data < val < mean_data + 2*var_data:
-    # #         A.append(val)
-    # #
-    # # print(len(A))
-    #
+
+    # Concatenating the actual datastream with the Sinus function
+    x = np.linspace(-np.pi, np.pi, 644)
+
     # result.to_csv('test_df_csv.csv')
-    # data3 = pd.read_csv('test_df_csv.csv')
-    #
-    # sin_template = pd.DataFrame(x, columns=['Mean'])
-    # date_add = ["2012-11-27" for j in range(sin_template.shape[0])]
-    # origin_add = ["GISTEMP" for j in range(sin_template.shape[0])]
-    # unnamed_add = [(data3.shape[0]) + j for j in range(sin_template.shape[0])]
-    # index_add = [(data3.shape[0]) + j for j in range(sin_template.shape[0])]
-    # h = np.vstack([[unnamed_add[j],  origin_add[j], date_add[j], sin_template['Mean'][j], index_add[j]] for j in range(sin_template.shape[0])])
-    # h_pd = pd.DataFrame(h, columns=['Unnamed: 0', 'Source', 'Date','Mean','index'])
+    data3 = pd.read_csv('test_df_csv.csv')
+    # print(data3.shape)
+
+    sin_template = pd.DataFrame(x, columns=['Mean'])
+    date_add = ["2012-11-27" for j in range(sin_template.shape[0])]
+    origin_add = ["GISTEMP" for j in range(sin_template.shape[0])]
+    unnamed_add = [(data3.shape[0]) + j for j in range(sin_template.shape[0])]
+    index_add = [(data3.shape[0]) + j for j in range(sin_template.shape[0])]
+    h = np.vstack([[unnamed_add[j],  origin_add[j], date_add[j], sin_template['Mean'][j], index_add[j]] for j in range(sin_template.shape[0])])
+    h_pd = pd.DataFrame(h, columns=['Unnamed: 0', 'Source', 'Date', 'Mean', 'index'])
+    # print(h_pd)
     # result.append(h_pd)
     #
     # #plt.plot(result)
