@@ -162,26 +162,26 @@ if __name__ == '__main__':
     # data_mean_GCAG['index'] = index
     # data_mean_GCAG = data_mean_GCAG.reindex(index)
     # print('data', data_mean_GCAG.shape[0])
-    print(data_mean_GCAG)
+    ##print(data_mean_GCAG)
 
     # # # GISTEMP data
     # data_mean_GISTEMP = data_GISTEMP['Mean'][result_GISTEMP]
     # data_date_GISTEMP = data_GISTEMP['Date'][result_GISTEMP]
 
-    # Plotting the original data
-    plt.figure(1)
-    plt.plot(data_mean_GCAG)
-    plt.title("Original Data with outliers removes")
-    plt.ylabel("Mean temperature distribution")
-    plt.draw()
-    plt.pause(20)
+    # # --Plotting the original data
+    # plt.figure(1)
+    # plt.plot(data_mean_GCAG)
+    # plt.title("Original Data with outliers removes")
+    # plt.ylabel("Mean temperature distribution")
+    # plt.draw()
+    # plt.pause(20)
 
-    # # Plotting to see how it looks.
-    plt.figure(2)
-    plt.plot(data_mean_GCAG)
-    plt.title("After removing outliers... using label type")
-    plt.draw()
-    plt.pause(20)
+    # # ---Plotting to see how it looks.
+    # plt.figure(2)
+    # plt.plot(data_mean_GCAG)
+    # plt.title("After removing outliers... using label type")
+    # plt.draw()
+    # plt.pause(20)
 
     # Concatenating the actual datastream with the Sinus function
     x = np.linspace(-np.pi, np.pi, 644)
@@ -190,17 +190,30 @@ if __name__ == '__main__':
     data3 = pd.read_csv('test_df_csv.csv')
     # print(data3.shape)
 
-    sin_template = pd.DataFrame(x, columns=['Mean'])
-    date_add = ["2012-11-27" for j in range(sin_template.shape[0])]
-    origin_add = ["GISTEMP" for j in range(sin_template.shape[0])]
-    unnamed_add = [(data3.shape[0]) + j for j in range(sin_template.shape[0])]
-    index_add = [(data3.shape[0]) + j for j in range(sin_template.shape[0])]
-    h = np.vstack([[unnamed_add[j],  origin_add[j], date_add[j], sin_template['Mean'][j], index_add[j]] for j in range(sin_template.shape[0])])
-    h_pd = pd.DataFrame(h, columns=['Unnamed: 0', 'Source', 'Date', 'Mean', 'index'])
-    # print(h_pd)
-    # result.append(h_pd)
-    #
-    # #plt.plot(result)
+    sin_template = np.sin(4 * np.pi * x)
+    sin_template = np.ones((1000, 1))
+    y = -x + 1
+    # print(sin_template)
+
+    sin_template = list(sin_template)
+
+    data_mean_GCAG = data_mean_GCAG.to_dict()
+    data_repeat = list(data_mean_GCAG[0].values())
+    data_mean_GCAG = list(data_mean_GCAG[0].values())
+
+    data_mean_GCAG.extend(sin_template)
+    data_mean_GCAG.extend(y)
+    data_mean_GCAG.extend(data_repeat)
+    data_mean_GCAG = pd.DataFrame(data_mean_GCAG)
+    print(data_mean_GCAG)
+
+    # data_mean_GCAG = data_mean_GCAG.extend(sin_template)
+    # data_mean_GCAG = pd.DataFrame(data_mean_GCAG)
+
+    # Plot the merge data
+    plt.figure()
+    plt.plot(data_mean_GCAG)
+    plt.show()
     # # result.to_csv('test_df_csv.csv')
     # result_ADWIN = ADWIN(result)
     #
