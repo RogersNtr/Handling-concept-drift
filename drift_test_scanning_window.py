@@ -72,6 +72,7 @@ def ADWIN(datastream, confidence_interval=None):
     """
     if confidence_interval is None:
         confidence_interval = 2
+
     # Initialize the Window
     height = datastream.shape[0]
     rand = np.random.randint(1, 52)
@@ -124,7 +125,14 @@ def kolmogorov_smirnov(data1, data2, window_size):
 
     return drift
 
+
 def generate_artificial_dataset(datastream):
+    """
+    Inject a drift on the dataset
+    Generate an Artificial Dataset and output the result.
+    :param datastream: The base data in which we inject Drift.
+    :return: None
+    """
     # Original data
     # ---Mean
     data_GCAG = data2[data2['Source'] == 'GCAG']
@@ -186,7 +194,8 @@ def generate_artificial_dataset(datastream):
 
     sin_template = np.sin(4 * np.pi * x)
     sin_template = np.ones((1000, 1))
-    y = -x + 1
+    y = -x + 1; min_y = np.min(y); max_y = np.max(y)
+    y = [(item - min_y)/(max_y - min_y) for item in y ]
     # print(sin_template)
 
     sin_template = list(sin_template)
@@ -198,7 +207,16 @@ def generate_artificial_dataset(datastream):
     data_mean_GCAG.extend(sin_template)
     data_mean_GCAG.extend(y)
     data_mean_GCAG.extend(data_repeat)
-    data_mean_GCAG = pd.DataFrame(data_mean_GCAG)
+    data_mean_GCAG = pd.DataFrame(np.abs(data_mean_GCAG))
+
+    # Test pour se rassurer que les valeurs sont comprises entre -1 et 1
+    # print("=====================================================")
+    # test = data_mean_GCAG > 1
+    # # print(test[0])
+    # q = [j for j in test[0] if j]
+    # print(q)
+    # print("==================================================")
+
     print(data_mean_GCAG)
 
     # data_mean_GCAG = data_mean_GCAG.extend(sin_template)
@@ -223,16 +241,8 @@ if __name__ == '__main__':
     # plt.plot(result['Mean'])
     # plt.show()
 
-    # Testing ADWIN
+    # # Testing ADWIN
 
-    # sin_template = remove_outlier2(sin_template)
-    #print(sin_template)
 
-    # print(data3)
-
-    # print('random', np.random.randint(1, 51))
-    # plt.figure()
-    # plt.plot(x, np.sin(4*np.pi*x))
-    # plt.show()
 
 
