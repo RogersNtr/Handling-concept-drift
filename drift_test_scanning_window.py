@@ -124,12 +124,7 @@ def kolmogorov_smirnov(data1, data2, window_size):
 
     return drift
 
-
-if __name__ == '__main__':
-    filename = 'data_set_test_weather/monthly_csv_temp.csv'
-    # data = pd.DataFrame.from_csv(filename)
-    data2 = pd.read_csv(filename)
-
+def generate_artificial_dataset(datastream):
     # Original data
     # ---Mean
     data_GCAG = data2[data2['Source'] == 'GCAG']
@@ -147,7 +142,6 @@ if __name__ == '__main__':
     # result = remove_outlier2(data2)
     # print("rmv_outlier 2", result.shape)
 
-
     # # print(data2)
     result_GCAG = remove_outlier(data_GCAG, 'GCAG')
     result_GISTEMP = remove_outlier(data_GISTEMP, 'GISTEMP')
@@ -155,7 +149,7 @@ if __name__ == '__main__':
     # # # GCAG data
     data_mean_GCAG = data_GCAG['Mean'][result_GCAG]
     data_mean_GCAG = data_mean_GCAG.tolist()  # Convert to list, to later convert to DataFrame
-    data_mean_GCAG = pd.DataFrame(data_mean_GCAG) #
+    data_mean_GCAG = pd.DataFrame(data_mean_GCAG)  #
 
     # Adding the last index to the mean column extracted
     # index = [j for j in range(data_mean_GCAG.shape[0])]
@@ -214,6 +208,13 @@ if __name__ == '__main__':
     plt.figure()
     plt.plot(data_mean_GCAG)
     plt.show()
+
+if __name__ == '__main__':
+    filename = 'data_set_test_weather/monthly_csv_temp.csv'
+    # data = pd.DataFrame.from_csv(filename)
+    data2 = pd.read_csv(filename)
+
+    generate_artificial_dataset(data2)
     # # result.to_csv('test_df_csv.csv')
     # result_ADWIN = ADWIN(result)
     #
