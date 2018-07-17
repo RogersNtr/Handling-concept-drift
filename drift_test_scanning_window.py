@@ -1,9 +1,10 @@
-import scipy
+import scipy.stats as stat
 import sklearn.linear_model
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statistics as stats
+from Page_Hinkmey import *
 
 
 def load_data(filename):
@@ -71,43 +72,58 @@ def ADWIN(datastream, confidence_interval=None):
     :return: W, a window of examples
     """
     if confidence_interval is None:
-        confidence_interval = 2
+        confidence_interval = 0.4
 
+    #drift_detected = False
+    mean_w = 0
     # Initialize the Window
     height = datastream.shape[0]
     rand = np.random.randint(1, 52)
-    rand = 100
+    rand = 20
 
     W = datastream[1:rand]
-    for xi in range(rand, datastream.shape[0]):
-        df2 = pd.DataFrame([[xi + 1, "GISTEMP", "2012-10-27", datastream['Mean'][xi], rand + 1]], columns=["Unnamed: 0", "Source", "Date", "Mean", "index"])
-        W = W.append(df2)
+    for xi in datastream:
+        # df2 = pd.DataFrame([[xi + 1, "GISTEMP", "2012-10-27", datastream['Mean'][xi], rand + 1]], columns=["Unnamed: 0", "Source", "Date", "Mean", "index"])
+        W = np.append(W, xi)
 
         # Splitting into 2 sets W0, W1
-        W0 = W
-        W1 = datastream[xi:height]
+        for j in range(1, W.shape[0]):
+            print("J value", j)
+            print('wshape', W.shape)
+            W0 = W[0:j]
+            W1 = W[j:W.shape[0] + 1]
 
-        # Compute the average
-        mean_W0_hat = np.mean(W0)
-        mean_W1_hat = np.mean(W1)
+            n0 = len(W0)  # W0.shape[0] *W0.shape[1]
+            n1 = len(W1)  # (W1.shape[0] )*( W1.shape[1])
+            if n1 > 1:
+                # Compute the average
+                mean_W0_hat = np.mean(W0)
+                mean_W1_hat = np.mean(W1)
 
-        # Calculate epsilon
-        n0 = (W0.shape[0] )*( W0.shape[1])
-        n1 = (W1.shape[0] )*( W1.shape[1])
-        n = n0 + n1
-        m = 1 / (1/n0 + 1/n1)
-        sigmap = confidence_interval / n
-        epsilon = np.sqrt((1/2*m) * (4/sigmap))
-        print('epsilon', epsilon)
-        diff = np.absolute(mean_W0_hat - mean_W1_hat)
-        print(diff)
-        while diff < epsilon:
-            W.drop([W.shape[0] - 1])
+                # Calculate epsilon
+                print("n0", n0)
+                print("n1", n1)
+                n = n0 + n1
+                m = 1 / (1/n0 + 1/n1)
+                sigmap = confidence_interval / n
+                epsilon = np.sqrt((1/2*m) * (4/sigmap))
+                print('epsilon', epsilon)
+                diff = np.absolute(mean_W0_hat - mean_W1_hat)
+                print('diff', diff)
+                if diff < epsilon:
+                    print("ENTERED")
+                    W = np.delete(W, j)
+                    print("Size of W", W.size)
+                    drift_detected = False
+                else:
+                    drift_detected = True
+                    break
+                    #  W.drop([W.shape[0] - 1])
+        #if mean_w - np.mean(W) == 0
+    return drift_detected
 
-    return W
 
-
-def kolmogorov_smirnov(data1, data2, window_size):
+def kolmogorov_smirnov(data1, data2, window_size=None):
     """
     The function is the Kolmogorov smirnov test, that use the
     :param data: Column vector
@@ -117,8 +133,9 @@ def kolmogorov_smirnov(data1, data2, window_size):
     # W0 = data[1:window_size]
     # for t in range(len(data)):
     #     W2 = data[window_size - t + 1:window_size]
-    result = stats.ks_2samp(data1, data2)
-    if result == 0:
+    result = stat.ks_2samp(data1, data2)
+    print("Result", result)
+    if result < 0.05: # We reject the Null Hypothesis, so Drfit detected
         drift = True
     else:
         drift = False
@@ -196,6 +213,7 @@ def generate_artificial_dataset(datastream):
     sin_template = np.ones((1000, 1))
     y = -x + 1; min_y = np.min(y); max_y = np.max(y)
     y = [(item - min_y)/(max_y - min_y) for item in y ]
+    print("Poumffffffffffffffffff",len(y))
     # print(sin_template)
 
     sin_template = list(sin_template)
@@ -216,23 +234,29 @@ def generate_artificial_dataset(datastream):
     # q = [j for j in test[0] if j]
     # print(q)
     # print("==================================================")
-
-    print(data_mean_GCAG)
+    dat = data_mean_GCAG.copy()
+    data_mean_GCAG = np.array(data_mean_GCAG)
+    dat = np.array(dat)
+    # print(np.append(dat[1:10], [2]))
+    # print(dat[1:10])
+    # rint(dat[0].append(data_mean_GCAG[0][0]))
 
     # data_mean_GCAG = data_mean_GCAG.extend(sin_template)
     # data_mean_GCAG = pd.DataFrame(data_mean_GCAG)
 
     # Plot the merge data
-    plt.figure()
-    plt.plot(data_mean_GCAG)
-    plt.show()
+    # plt.figure()
+    # plt.plot(data_mean_GCAG)
+    # plt.draw()
+    # plt.pause(5)
+    return data_mean_GCAG
 
 if __name__ == '__main__':
     filename = 'data_set_test_weather/monthly_csv_temp.csv'
     # data = pd.DataFrame.from_csv(filename)
     data2 = pd.read_csv(filename)
 
-    generate_artificial_dataset(data2)
+    data_mean = generate_artificial_dataset(data2)
     # # result.to_csv('test_df_csv.csv')
     # result_ADWIN = ADWIN(result)
     #
@@ -242,6 +266,20 @@ if __name__ == '__main__':
     # plt.show()
 
     # # Testing ADWIN
+    print(data_mean.shape)
+    mean_w = ADWIN(data_mean)
+    print(mean_w)
+
+    # # Testing Kolmogorov-Smirnov
+    distrib1 = data_mean[2639:3284, 0]
+    # distrib2 = data_mean[1639:2639, 0]
+    distrib2 = data_mean[3283:4921, 0]
+    kolmogorov_smirnov(distrib1, distrib2)
+
+    # # Testing the Page Hinkley statistic test
+    pg_hinkley = Page_Hinkley()
+    pg_hinkley.set_input()
+
 
 
 
