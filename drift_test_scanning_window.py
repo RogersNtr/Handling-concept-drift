@@ -124,7 +124,7 @@ def ADWIN(datastream, confidence_interval=None):
     return drift_detected
 
 
-def kolmogorov_smirnov(data1, data2, window_size=None):
+def kolmogorov_smirnov(data, window_size=1000):
     """
     The function is the Kolmogorov smirnov test, that use the
     :param data: Column vector
@@ -132,23 +132,51 @@ def kolmogorov_smirnov(data1, data2, window_size=None):
     :return: True, False (True : Drift Present, False : Drift Absent)
     """
     # W0 = data[1:window_size]
-    # for t in range(len(data)):
-    #     W2 = data[window_size - t + 1:window_size]
-    result = stat.ks_2samp(data1, data2)
-    print("Result", result)
-    # if result < 0.05: # We reject the Null Hypothesis, so Drfit detected
-    #     drift = True
-    # else:
-    #     drift = False
+    num = 0
+    data_length = len(data)
 
-    return False
+    for t in range(0, data_length, window_size):
+        data_ = []
+        # Splitting the data recursively in two using a sliding window
+        sample1 = data[t:t+window_size]
+        if t+window_size < data_length:
+            sample2 = data[t+window_size:t + 2*window_size]
+        else:
+            print("ca marche")
+            sample2 = data[t:data_length]
+
+        # --->Mean and std of the sample 1
+        mean_samp1e2 = np.mean(sample1)  # Mean of the second sliding window.
+        std_sample2 = np.std(sample1)  # Standard deviation
+
+        # ---> Mean and std of the sample 2
+        mean_samp1e1 = np.mean(sample2)
+        std_sample1 = np.std(sample2)
+
+        # Normalization of the value of the samples
+        sample1 = [(item - mean_samp1e1) / std_sample1 for item in sample1]
+        sample2 = [(item - mean_samp1e2) / std_sample2 for item in sample2]
+
+        D_stat, p_value = stat.ks_2samp(sample1, sample2)
+
+        print("Result P vlaue", p_value)
+        if p_value < 0.05: # We reject the Null Hypothesis, so Drfit detected
+            drift = True
+            num = num + 1
+            print("Drift detected between {} to {} and {} to {}".format(t, t+window_size-1, t+window_size,  t+2*window_size))
+        else:
+            drift = False
+            print("t value..........{} and data length {}".format(t+window_size, t + 2*window_size))
+    print("{} drifts detected".format(num))
+    return drift
 
 
-def generate_artificial_dataset(datastream):
+def generate_artificial_dataset(datastream, pause_=None):
     """
     Inject a drift on the dataset
     Generate an Artificial Dataset and output the result.
     :param datastream: The base data in which we inject Drift.
+    :param pause_ : The time to pause the graphic
     :return: None
     """
     # Original data
@@ -246,9 +274,16 @@ def generate_artificial_dataset(datastream):
     # data_mean_GCAG = pd.DataFrame(data_mean_GCAG)
 
     # Plot the merge data
-    # plt.figure()
-    # plt.plot(data_mean_GCAG)
-    # plt.draw()
+    if pause_ is None:
+        plt.figure()
+        plt.plot(data_mean_GCAG)
+        plt.draw()
+        plt.show()
+    else:
+        plt.figure()
+        plt.plot(data_mean_GCAG)
+        plt.draw()
+        plt.pause(pause_)
     # plt.pause(5)
     return data_mean_GCAG
 
@@ -257,7 +292,7 @@ if __name__ == '__main__':
     # data = pd.DataFrame.from_csv(filename)
     data2 = pd.read_csv(filename)
 
-    data_mean = generate_artificial_dataset(data2)
+    data_mean = generate_artificial_dataset(data2, pause_=2)
     # # result.to_csv('test_df_csv.csv')
     # result_ADWIN = ADWIN(result)
     #
@@ -268,24 +303,29 @@ if __name__ == '__main__':
 
     # # Testing ADWIN
     print(data_mean.shape)
-    mean_w = ADWIN(data_mean)
-    print(mean_w)
+    # mean_w = ADWIN(data_mean)
+    # print(mean_w)
 
     # # Testing Kolmogorov-Smirnov
-    distrib1 = data_mean[2639:3284, 0]
-    # distrib2 = data_mean[1639:2639, 0]
-    distrib2 = data_mean[3283:4921, 0]
-    kolmogorov_smirnov(distrib1, distrib2)
+    sample1 = data_mean[2639:3284, 0]
+    # distrib1 = data_mean[1639:2639, 0]
+    sample2 = data_mean[3283:4921, 0]
+    # plt.figure()
+    # plt.plot(distrib1, distrib2);
+    # plt.show()
+
+    kolmogorov_smirnov(data_mean[:,0])
 
     # # Testing the Page Hinkley statistic test
-    pg_hinkley = PageHinkley()
-    print("DATA MEAN pfppffffffffffffffff", data_mean[:,0])
-    print()
-    for data_element in data_mean[:, 0]:
-        changed_detected = pg_hinkley.detect_drift(data_element)
-        # print(changed_detected)
-        if changed_detected:
-            print("Changed detected using Page_hinkley at pt {}")
+    # pg_hinkley = PageHinkley()
+    # print("DATA MEAN pfppffffffffffffffff", data_mean[:,0])
+    # print()
+    # for data_element in data_mean[:, 0]:
+    #     changed_detected = pg_hinkley.detect_drift(data_element)
+    #     # print(changed_detected)
+    #     if changed_detected:
+    #         print("Changed detected using Page_hinkley at pt {}")
+
 
 
 
