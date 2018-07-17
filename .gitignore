@@ -1,3 +1,4 @@
 Hexapod_dataset
 venv
-.idea/*
+.idea
+__pycache__/
