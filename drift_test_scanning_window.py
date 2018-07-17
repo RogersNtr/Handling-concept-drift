@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statistics as stats
-from Page_Hinkmey import *
+from Page_Hinkley import *
+
 
 
 def load_data(filename):
@@ -135,12 +136,12 @@ def kolmogorov_smirnov(data1, data2, window_size=None):
     #     W2 = data[window_size - t + 1:window_size]
     result = stat.ks_2samp(data1, data2)
     print("Result", result)
-    if result < 0.05: # We reject the Null Hypothesis, so Drfit detected
-        drift = True
-    else:
-        drift = False
+    # if result < 0.05: # We reject the Null Hypothesis, so Drfit detected
+    #     drift = True
+    # else:
+    #     drift = False
 
-    return drift
+    return False
 
 
 def generate_artificial_dataset(datastream):
@@ -277,8 +278,15 @@ if __name__ == '__main__':
     kolmogorov_smirnov(distrib1, distrib2)
 
     # # Testing the Page Hinkley statistic test
-    pg_hinkley = Page_Hinkley()
-    pg_hinkley.set_input()
+    pg_hinkley = PageHinkley()
+    print("DATA MEAN pfppffffffffffffffff", data_mean[:,0])
+    print()
+    for data_element in data_mean[:, 0]:
+        changed_detected = pg_hinkley.detect_drift(data_element)
+        # print(changed_detected)
+        if changed_detected:
+            print("Changed detected using Page_hinkley at pt {}")
+
 
 
 
