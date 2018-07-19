@@ -307,14 +307,15 @@ if __name__ == '__main__':
     # print(mean_w)
 
     # # Testing Kolmogorov-Smirnov
-    sample1 = data_mean[2639:3284, 0]
-    # distrib1 = data_mean[1639:2639, 0]
-    sample2 = data_mean[3283:4921, 0]
+    sample2 = data_mean[2639:3284, 0]
+    # Sample1 = data_mean[1639:2639, 0]
+    # sample1 = data_mean[3283:4921, 0]
+    sample1 = data_mean[0:2283, 0]
     # plt.figure()
-    # plt.plot(distrib1, distrib2);
+    # plt.plot(sample1)
     # plt.show()
 
-    kolmogorov_smirnov(data_mean[:,0])
+    kolmogorov_smirnov(data_mean[:, 0])
 
     # # Testing the Page Hinkley statistic test
     # pg_hinkley = PageHinkley()
