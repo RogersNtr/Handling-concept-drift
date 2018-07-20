@@ -197,6 +197,7 @@ def generate_artificial_dataset(datastream, pause_=None):
     # print("rmv_outlier 2", result.shape)
 
     # # print(data2)
+    print("Type of data_gcag", type(data_GCAG))
     result_GCAG = remove_outlier(data_GCAG, 'GCAG')
     result_GISTEMP = remove_outlier(data_GISTEMP, 'GISTEMP')
 
