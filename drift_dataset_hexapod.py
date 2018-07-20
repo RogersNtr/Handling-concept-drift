@@ -80,7 +80,6 @@ def normalize(datastream):
     max_ = np.max(datastream['current'])
     for index, row in datastream.iterrows():
         datastream = datastream.replace(row['current'], norm_(row['current'], min_, max_))
-    # datastream['current'].apply(norm_)
     return datastream
 
 
