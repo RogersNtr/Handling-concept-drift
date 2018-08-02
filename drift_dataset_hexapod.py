@@ -3,7 +3,8 @@ import scipy as sc
 import pandas as pd
 import matplotlib.pyplot  as plt
 from datetime import datetime
-from drift_test_scanning_window import kolmogorov_smirnov, ADWIN
+import scipy.stats as stat
+# from drift_test_scanning_window import kolmogorov_smirnov, ADWIN
 
 def load_data(filename):
     ''' Load a file, given its name.
@@ -59,7 +60,7 @@ def concatenate_data(data1, data2, window_size=1024):
     Concatenate two data
     :param data1: data to concatenate
     :param data2: second data to concatenate
-    :param window_size: 1024
+    :param window_size: 1024 by default, it is the size of the scanning window.
     :return: the data already concatenate
     """
     shape_data1 = data1.shape[0]
@@ -82,7 +83,8 @@ def concatenate_data(data1, data2, window_size=1024):
         # print(type(A))
         frames.append(A)
         if i-1+window_size < shape_data1:
-            # print("i", i)
+            print("i", i)
+            print("data2__ Concatenate_data", data2['current'][i])
             smooth_A = [{'current': (data1['current'][i - 1 + window_size] + data2['current'][i]) / 2, 'label': -1}]
             smooth_A = pd.DataFrame(smooth_A)
             frames.append(smooth_A)
@@ -97,6 +99,76 @@ def concatenate_data(data1, data2, window_size=1024):
         frames.append(B)
     data_concatenate = pd.concat(frames, ignore_index=True)
     return data_concatenate
+
+
+def kolmogorov_smirnov(data, window_size=100):
+    """
+    The function is the Kolmogorov smirnov test, that use the
+    :param data: Column vector
+    :param window_size: Size of the Scanning Window
+    :return: True, False (True : Drift Present, False : Drift Absent)
+    """
+    # W0 = data[1:window_size]
+    num = 0
+    data_length = data.shape[0]
+
+    for t in range(0, data_length, window_size):
+        data_ = []
+        # Splitting the data recursively in two using a sliding window
+        sample1 = data[t:t+window_size]
+        if t+window_size < data_length:
+            sample2 = data[t+window_size:t + 2*window_size]
+        else:
+            # print("ca marche")
+            sample2 = data[t:data_length]
+
+        # print("sample2", sample2)
+        # print("sample1", sample1)
+        current_sample1 = sample1['current']
+        current_sample2 = sample2['current']
+        print("type s1", type(current_sample1))
+
+        # # --->Mean and std of the sample 1
+        mean_samp1e1 = current_sample1.mean()  # Mean of the second sliding window.
+        std_sample1 = current_sample1.std()  # Standard deviation
+
+        # #  ---> Mean and std of the sample 2
+        mean_samp1e2 = current_sample2.mean()
+        std_sample2 = current_sample2.std()
+        # print("mean s1", mean_samp1e1)
+        # print("mean s2", mean_samp1e2)
+
+        # # Normalization of the value of the samples
+        mean_samp1e1_pd = pd.DataFrame(mean_samp1e1*np.ones((sample1.shape[0], 1)))
+        # mean_samp1e2_pd = pd.DataFrame(mean_samp1e2*np.ones((sample2.shape[0], 1)))
+        mean_samp1e2_pd = mean_samp1e2*np.ones((sample2.shape[0], 1))
+
+        print("mean_sample1", mean_samp1e2_pd, current_sample2)
+        t1 = mean_samp1e1_pd.sub(current_sample1, axis=0)
+
+        val_current2 = current_sample2.values
+        val_current2 = val_current2.reshape(val_current2.shape[0], 1)
+
+        t2 = val_current2 - mean_samp1e2_pd
+        print("t2", t2)
+        t2 = pd.DataFrame(t2)
+        norm_s1 = - t1.div(std_sample1)
+        norm_s2 = - t2.div(std_sample2)
+
+        val1 = norm_s1.values
+        val2 = norm_s2.values
+        D_stat, p_value = stat.ks_2samp(val1[:, 0], val2[:, 0])
+
+        print("Result P vlaue", p_value)
+        if p_value < 0.05: # We reject the Null Hypothesis, so Drfit detected
+            drift = True
+            num = num + 1
+            print("Drift detected between {} to {} and {} to {}".format(t, t+window_size-1, t+window_size,  t+2*window_size))
+        else:
+            drift = False
+            print("t value..........{} and data length {}".format(t+window_size, t + 2*window_size))
+    print("{} drifts detected".format(num))
+    return drift
 
 
 def norm_(x, min_, max_):
@@ -165,6 +237,7 @@ if __name__ == '__main__':
     current_flat = pow_flat[:, 2]
     current_gf = pow_gf[:, 2]
     current_gr = pow_gr[:, 2]
+    # print(type(current_bf))
 
     # Converting all the current data into a pandas dataframe
     current_bf_pd = pd.DataFrame(current_bf, columns=['current'])
@@ -197,9 +270,9 @@ if __name__ == '__main__':
     current_gr_pd['label'] = elt_gr
 
     # Normalization of the current between [0, 1]
-    window_size = 10
-    A = current_bf_pd[1:window_size]
-    B = current_br_pd[1:window_size]
+    window_size = 200  # Window size on the data(only a subset)
+    # A = current_bf_pd[1:window_size]
+    # B = current_br_pd[1:window_size]
     # for index, row in A.iterrows():
     #     print(row['current'])
     # print(A)
@@ -228,43 +301,68 @@ if __name__ == '__main__':
 
     # # Removing Outliers
     start = datetime.now()
-    # current_br_pd = remove_outlier(current_br_pd)
+    current_br_pd = remove_outlier(current_br_pd)
     current_bf_pd = remove_outlier(current_bf_pd)
-    current_flat_pd = remove_outlier(current_flat_pd)
+    # current_flat_pd = remove_outlier(current_flat_pd)
     # current_cu_pd = remove_outlier(current_cu_pd)
     # current_gf_pd = remove_outlier(current_gf_pd[1:200])
-    current_gr_pd = remove_outlier(current_gr_pd
-                                   )
-    print(type(current_gr_pd))
+    # current_gr_pd = remove_outlier(current_gr_pd)
+
+    # print(current_gr_pd)
     end = datetime.now() - start
     print("outlier start : {}, end : {} ".format(start, end))
 
     # # Concatenation
+    current_subset_bf = current_bf_pd[0:window_size - 3]
+    current_subset_br = current_br_pd[0:window_size]
     start = datetime.now()
-    CP1 = concatenate_data(current_gr_pd, current_flat_pd)  # Black Flat vs flat
+    CP1 = concatenate_data(current_subset_bf, current_subset_br, 100)  # Black Flat vs flat
     # CP1 = concatenate_data(current_gf_pd, CP1)  # Black Flat vs flat vs Grass Flat
     end = datetime.now() - start
     print("Concatenation start : {}, end : {} ".format(start, end))
-    print(CP1.shape[0])
+    print(CP1)
     # print(current_cu_pd.shape[0])
     plt.figure()
-    plt.plot(CP1['current'][1:200])
+
+    x_axis = range(0, 1000)
+    # plt.xlim(0, 1000)
+    # plt.yscale('linear')
+    plt.subplot(211)
+    # CP1['current'][0:current_subset_bf.shape[0]].plot()
+    plt.plot(current_bf_pd['current'][0:window_size])
+    plt.subplot(212)
+    plt.plot(current_br_pd['current'][35:window_size])
+    # CP1['current'][current_subset_bf.shape[0]:CP1.shape[0]].plot()
+
+    # plt.plot(CP1['current'][0:current_subset_bf.shape[0]])
     plt.show()
 
     print("\n\n\n")
     # # Detect Drift
     # start = datetime.now()
-    # kolmogorov_smirnov(CP1, window_size=1024)
+    kolmogorov_smirnov(CP1, window_size=100)
     # end = datetime.now() - start
     # print("Drift detection start : {}, end : {} ".format(start, end))
 
-    print("\n\n\n")
-    print(current_bf_pd.shape[0])
-    print(current_flat_pd.shape[0])
-    print(current_gf_pd.shape[0])
-    print("rough")
-    print(current_br_pd.shape[0])
-    print(current_gr_pd.shape[0])
+    # print("\n\n\n")
+    # print(current_bf_pd.shape[0])
+    # print(current_flat_pd.shape[0])
+    # print(current_gf_pd.shape[0])
+    # print("rough")
+    # print(current_br_pd.shape[0])
+    # print(current_gr_pd.shape[0])
+
+    # # Testing the drift detection on the dataset
+
+    # 1. Flat vs Wodden
+
+
+    # 2. Flat vs Rough
+
+    # 3. Grass vs Black
+
+    # 4. Grass vs Black vs Wodden
+
 
     # print(np.max(current_br_pd['current']))
     # print(current_cu_pd)

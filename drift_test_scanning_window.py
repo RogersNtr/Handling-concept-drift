@@ -133,7 +133,7 @@ def kolmogorov_smirnov(data, window_size=1000):
     """
     # W0 = data[1:window_size]
     num = 0
-    data_length = len(data)
+    data_length = data.shape[0]
 
     for t in range(0, data_length, window_size):
         data_ = []
@@ -142,7 +142,7 @@ def kolmogorov_smirnov(data, window_size=1000):
         if t+window_size < data_length:
             sample2 = data[t+window_size:t + 2*window_size]
         else:
-            print("ca marche")
+            # print("ca marche")
             sample2 = data[t:data_length]
 
         # --->Mean and std of the sample 1
@@ -287,6 +287,7 @@ def generate_artificial_dataset(datastream, pause_=None):
         plt.pause(pause_)
     # plt.pause(5)
     return data_mean_GCAG
+
 
 if __name__ == '__main__':
     filename = 'data_set_test_weather/monthly_csv_temp.csv'
