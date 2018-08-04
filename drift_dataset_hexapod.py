@@ -114,19 +114,22 @@ def kolmogorov_smirnov(data, window_size=100):
 
     for t in range(0, data_length, window_size):
         data_ = []
+        print("t", t)
         # Splitting the data recursively in two using a sliding window
+
         sample1 = data[t:t+window_size]
+
         if t+window_size < data_length:
-            sample2 = data[t+window_size:t + 2*window_size]
+            if t+ 2*window_size < data_length:
+                sample2 = data[t+window_size:t + 2*window_size]
+            else:
+                sample2 = data[t + window_size:data_length]
         else:
             # print("ca marche")
-            sample2 = data[t:data_length]
+            break
 
-        # print("sample2", sample2)
-        # print("sample1", sample1)
         current_sample1 = sample1['current']
         current_sample2 = sample2['current']
-        print("type s1", type(current_sample1))
 
         # # --->Mean and std of the sample 1
         mean_samp1e1 = current_sample1.mean()  # Mean of the second sliding window.
@@ -135,26 +138,23 @@ def kolmogorov_smirnov(data, window_size=100):
         # #  ---> Mean and std of the sample 2
         mean_samp1e2 = current_sample2.mean()
         std_sample2 = current_sample2.std()
-        # print("mean s1", mean_samp1e1)
-        # print("mean s2", mean_samp1e2)
 
         # # Normalization of the value of the samples
         mean_samp1e1_pd = pd.DataFrame(mean_samp1e1*np.ones((sample1.shape[0], 1)))
         # mean_samp1e2_pd = pd.DataFrame(mean_samp1e2*np.ones((sample2.shape[0], 1)))
         mean_samp1e2_pd = mean_samp1e2*np.ones((sample2.shape[0], 1))
 
-        print("mean_sample1", mean_samp1e2_pd, current_sample2)
-        t1 = mean_samp1e1_pd.sub(current_sample1, axis=0)
+        sample1_sub = mean_samp1e1_pd.sub(current_sample1, axis=0)
+        norm_s1 = - sample1_sub.div(std_sample1)
 
+        # Using numpy in order to avoid the need for reindexing the indexes of the DataFrame,
         val_current2 = current_sample2.values
         val_current2 = val_current2.reshape(val_current2.shape[0], 1)
+        sample2_sub = val_current2 - mean_samp1e2_pd
+        sample2_sub = pd.DataFrame(sample2_sub)
+        norm_s2 = - sample2_sub.div(std_sample2)
 
-        t2 = val_current2 - mean_samp1e2_pd
-        print("t2", t2)
-        t2 = pd.DataFrame(t2)
-        norm_s1 = - t1.div(std_sample1)
-        norm_s2 = - t2.div(std_sample2)
-
+        # Transform to numpy(needed by the ks_2samp function
         val1 = norm_s1.values
         val2 = norm_s2.values
         D_stat, p_value = stat.ks_2samp(val1[:, 0], val2[:, 0])
@@ -163,12 +163,20 @@ def kolmogorov_smirnov(data, window_size=100):
         if p_value < 0.05: # We reject the Null Hypothesis, so Drfit detected
             drift = True
             num = num + 1
-            print("Drift detected between {} to {} and {} to {}".format(t, t+window_size-1, t+window_size,  t+2*window_size))
+            if t + window_size < data_length:
+                print("Drift detected between {} to {} and {} to {}".format(t, t+window_size-1, t+window_size,  t+2*window_size))
+            else:
+                print("Drift detected between {} to {} and {} to {}".format(t, t + 2*window_size - 1, t,
+                                                                            data_length))
         else:
             drift = False
             print("t value..........{} and data length {}".format(t+window_size, t + 2*window_size))
     print("{} drifts detected".format(num))
     return drift
+
+
+def page_hinkley(data):
+    return 0
 
 
 def norm_(x, min_, max_):
@@ -316,31 +324,32 @@ if __name__ == '__main__':
     current_subset_bf = current_bf_pd[0:window_size - 3]
     current_subset_br = current_br_pd[0:window_size]
     start = datetime.now()
-    CP1 = concatenate_data(current_subset_bf, current_subset_br, 100)  # Black Flat vs flat
+    CP1 = concatenate_data(current_subset_bf, current_subset_br, 200)  # Black Flat vs flat
     # CP1 = concatenate_data(current_gf_pd, CP1)  # Black Flat vs flat vs Grass Flat
     end = datetime.now() - start
     print("Concatenation start : {}, end : {} ".format(start, end))
-    print(CP1)
+    print("shape CP1", CP1.shape)
     # print(current_cu_pd.shape[0])
-    plt.figure()
+    # plt.figure()
 
     x_axis = range(0, 1000)
     # plt.xlim(0, 1000)
     # plt.yscale('linear')
-    plt.subplot(211)
+    # plt.subplot(211)
     # CP1['current'][0:current_subset_bf.shape[0]].plot()
-    plt.plot(current_bf_pd['current'][0:window_size])
-    plt.subplot(212)
-    plt.plot(current_br_pd['current'][35:window_size])
+    # plt.plot(current_bf_pd['current'][0:window_size])
+    # plt.subplot(212)
+    # plt.plot(current_br_pd['current'][0:window_size])
     # CP1['current'][current_subset_bf.shape[0]:CP1.shape[0]].plot()
 
     # plt.plot(CP1['current'][0:current_subset_bf.shape[0]])
-    plt.show()
+    # plt.plot(CP1['current'])
+    # plt.show()
 
     print("\n\n\n")
     # # Detect Drift
     # start = datetime.now()
-    kolmogorov_smirnov(CP1, window_size=100)
+    kolmogorov_smirnov(CP1, window_size=200)
     # end = datetime.now() - start
     # print("Drift detection start : {}, end : {} ".format(start, end))
 
