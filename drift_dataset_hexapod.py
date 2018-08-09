@@ -4,7 +4,8 @@ import pandas as pd
 import matplotlib.pyplot  as plt
 from datetime import datetime
 import scipy.stats as stat
-# from drift_test_scanning_window import kolmogorov_smirnov, ADWIN
+from PageHinkley import *
+from ADWIN_v1 import *
 
 def load_data(filename):
     ''' Load a file, given its name.
@@ -349,7 +350,7 @@ if __name__ == '__main__':
     print("\n\n\n")
     # # Detect Drift
     # start = datetime.now()
-    kolmogorov_smirnov(CP1, window_size=200)
+    # kolmogorov_smirnov(CP1, window_size=200)
     # end = datetime.now() - start
     # print("Drift detection start : {}, end : {} ".format(start, end))
 
@@ -360,6 +361,16 @@ if __name__ == '__main__':
     # print("rough")
     # print(current_br_pd.shape[0])
     # print(current_gr_pd.shape[0])
+
+    # # Testing the PageHinkley Algorithm
+    CP1 = CP1["current"]
+    print(type(CP1))
+    page_hinkley = Page_Hinkley(CP1, delta_=0.005, lambda_=1, alpha_=1 - 0.0009)
+    # page_hinkley.detect_drift()
+    adwin = Adwin(CP1)
+    adwin.detect_drift()
+
+    # page_hinkley(CP1)
 
     # # Testing the drift detection on the dataset
 
@@ -382,3 +393,5 @@ if __name__ == '__main__':
     # plt.plot(pow[:,0])
     # plt.show()
     # print(result_pd)
+
+    # # testing pageHinkley algorithm
