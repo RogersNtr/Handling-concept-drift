@@ -171,7 +171,11 @@ def kolmogorov_smirnov(data, window_size=1000):
     return drift
 
 
-def generate_artificial_dataset(datastream, pause_=None):
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def generate_artificial_dataset(datastream, pause_=None, drift_type='virtual'):
     """
     Inject a drift on the dataset
     Generate an Artificial Dataset and output the result.
@@ -238,9 +242,12 @@ def generate_artificial_dataset(datastream, pause_=None):
     # result.to_csv('test_df_csv.csv')
     data3 = pd.read_csv('test_df_csv.csv')
     # print(data3.shape)
-
     sin_template = np.sin(4 * np.pi * x)
-    sin_template = np.ones((1000, 1))
+    if drift_type == 'virtual':
+        sin_template = np.ones((1000, 1))
+    else:
+        val = np.linspace(0, 10, 400)
+        sin_template = sigmoid(val)
     y = -x + 1; min_y = np.min(y); max_y = np.max(y)
     y = [(item - min_y)/(max_y - min_y) for item in y ]
     print("Poumffffffffffffffffff",len(y))
@@ -252,8 +259,16 @@ def generate_artificial_dataset(datastream, pause_=None):
     data_repeat = list(data_mean_GCAG[0].values())
     data_mean_GCAG = list(data_mean_GCAG[0].values())
 
+    data_mean_GCAG = data_mean_GCAG[1:300]
+
+    data_mean_GCAG.append((data_mean_GCAG[len(data_mean_GCAG) - 1] + sin_template[0])/2)
+
     data_mean_GCAG.extend(sin_template)
-    data_mean_GCAG.extend(y)
+    # data_mean_GCAG.extend(y)
+    N = 200
+    data_repeat = 0.17 + 0.3 * np.random.rand(N)
+    data_mean_GCAG.append((data_mean_GCAG[len(data_mean_GCAG) - 1] + data_repeat[0])/2)
+    data_mean_GCAG.extend(data_mean_GCAG[0:70])
     data_mean_GCAG.extend(data_repeat)
     data_mean_GCAG = pd.DataFrame(np.abs(data_mean_GCAG))
 
@@ -278,6 +293,7 @@ def generate_artificial_dataset(datastream, pause_=None):
     if pause_ is None:
         plt.figure()
         plt.plot(data_mean_GCAG)
+        plt.title('Gradual change')
         plt.draw()
         plt.show()
     else:
@@ -294,7 +310,7 @@ if __name__ == '__main__':
     # data = pd.DataFrame.from_csv(filename)
     data2 = pd.read_csv(filename)
 
-    data_mean = generate_artificial_dataset(data2, pause_=2)
+    data_mean = generate_artificial_dataset(data2, pause_=20, drift_type='real')
     # # result.to_csv('test_df_csv.csv')
     # result_ADWIN = ADWIN(result)
     #

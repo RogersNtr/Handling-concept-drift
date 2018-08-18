@@ -5,7 +5,9 @@ import matplotlib.pyplot  as plt
 from datetime import datetime
 import scipy.stats as stat
 from PageHinkley import *
-from ADWIN_v1 import *
+from ADWIN.adwin import *
+from plotting import *
+
 
 def load_data(filename):
     ''' Load a file, given its name.
@@ -324,6 +326,11 @@ if __name__ == '__main__':
     # # Concatenation
     current_subset_bf = current_bf_pd[0:window_size - 3]
     current_subset_br = current_br_pd[0:window_size]
+
+    # Plotting scatter
+
+    # plot_scatter_real(current_subset_bf, current_subset_br, groups=("Black Flat", "br"))
+
     start = datetime.now()
     CP1 = concatenate_data(current_subset_bf, current_subset_br, 200)  # Black Flat vs flat
     # CP1 = concatenate_data(current_gf_pd, CP1)  # Black Flat vs flat vs Grass Flat
@@ -331,21 +338,26 @@ if __name__ == '__main__':
     print("Concatenation start : {}, end : {} ".format(start, end))
     print("shape CP1", CP1.shape)
     # print(current_cu_pd.shape[0])
-    # plt.figure()
+    plt.figure()
 
     x_axis = range(0, 1000)
     # plt.xlim(0, 1000)
     # plt.yscale('linear')
     # plt.subplot(211)
-    # CP1['current'][0:current_subset_bf.shape[0]].plot()
+    # plt.plot(CP1['current'][0:current_subset_bf.shape[0]], 'r')
     # plt.plot(current_bf_pd['current'][0:window_size])
     # plt.subplot(212)
     # plt.plot(current_br_pd['current'][0:window_size])
-    # CP1['current'][current_subset_bf.shape[0]:CP1.shape[0]].plot()
+    # plt.plot(CP1['current'][current_subset_bf.shape[0]:CP1.shape[0]], 'g')
+
+    plt.plot(CP1['current'])
+    plt.title("Abrupt Drift")
+    # plt.xlabel("black Flat")
+    # plt.ylabel("black Rough")
 
     # plt.plot(CP1['current'][0:current_subset_bf.shape[0]])
     # plt.plot(CP1['current'])
-    # plt.show()
+    plt.show()
 
     print("\n\n\n")
     # # Detect Drift
@@ -367,9 +379,16 @@ if __name__ == '__main__':
     print(type(CP1))
     page_hinkley = Page_Hinkley(CP1, delta_=0.005, lambda_=1, alpha_=1 - 0.0009)
     # page_hinkley.detect_drift()
-    adwin = Adwin(CP1)
-    adwin.detect_drift()
+    adwin = AdwinAlgo(5)
+    data_stream = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.7]
 
+    # for data in CP1:
+    #     if adwin.update(data):
+    #         print("Change has been detected in data: " + str(data))
+    #         print(adwin.get_estimation())  # Prints the next value of the estimated form of data_stream
+    #     else:
+    #         print(adwin.get_estimation())
+    #         print("Nodrfit Detected")
     # page_hinkley(CP1)
 
     # # Testing the drift detection on the dataset
