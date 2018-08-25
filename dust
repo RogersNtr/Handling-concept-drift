@@ -1,0 +1,145 @@
+    # for i in range(0, 100, window_size):
+    #     A = current_bf_pd[i:i+window_size]
+    #     B = current_br_pd[i:i+window_size]
+    #     # print(type(A))
+    #     frames.append(A)
+    #     smooth_A = [{'current':(current_bf_pd['current'][i-1+window_size] + current_br_pd['current'][i])/2, 'label':-1}]
+    #     smooth_A = pd.DataFrame(smooth_A)
+    #     # print(type(smooth_A))
+    #     # dicts = [{'current':}, {}]
+    #     frames.append(smooth_A)
+    #     frames.append(B)
+    # C = pd.concat(frames, ignore_index=True)
+
+
+
+    # Plotting scatter
+
+    # plot_scatter_real(current_subset_bf, current_subset_br, groups=("Black Flat", "br"))
+
+    # in concatenation part
+    current_subset_bf = current_bf_pd[0:window_size - 3]
+    current_subset_br = current_br_pd[0:window_size]
+    # # Extract only subset of the data for testing purposes
+
+
+
+    # x_axis = range(0, 1000)
+    # plt.xlim(0, 1000)
+    # plt.yscale('linear')
+    # plt.subplot(211)
+    # plt.plot(CP1['current'][0:current_subset_bf.shape[0]], 'r')
+    # plt.plot(current_bf_pd['current'][0:window_size])
+    # plt.subplot(212)
+    # plt.plot(current_br_pd['current'][0:window_size])
+    # plt.plot(CP1['current'][current_subset_bf.shape[0]:CP1.shape[0]], 'g')
+
+
+C:\Programmes\Anaconda3\python.exe "C:/Users/Etudiant UPS/Documents/Semestre8/CTU/Internship/Drift_internship/Test_drift_UCI_dataset/drift_dataset_hexapod.py"
+removing outliers start....
+outlier start : 2018-08-24 23:06:40.045587, end : 0:00:01.600454
+
+
+ concatenation start....
+shapeDP1 (401, 2)
+
+
+ concatenation start....
+
+
+ concatenation start....
+shapeDP2 (604, 2)
+
+
+ concatenation start....
+shapeDP3 (401, 2)
+
+
+ concatenation start....
+shapeDP4 (401, 2)
+Concatenation start : 2018-08-24 23:06:41.646041, end : 0:00:00.010655
+KS-test start....
+datalength 401
+Drift detected between 0 to 99 and 100 to 200
+Drift detected between 100 to 199 and 200 to 300
+Drift detected between 200 to 299 and 300 to 400
+3 drifts detected using KS-test
+5 iteration in ks test
+
+ADWIN start....
+
+ADWIN: drift at 285
+ADWIN: drift at 300
+ADWIN: drift at 335
+ADWIN, true positive : 1
+
+PH test start....
+.
+Page Hinkley: drift at 202
+KS-test start....
+datalength 401
+Drift detected between 0 to 99 and 100 to 200
+Drift detected between 100 to 199 and 200 to 300
+Drift detected between 200 to 299 and 300 to 400
+3 drifts detected using KS-test
+5 iteration in ks test
+
+ADWIN start....
+
+ADWIN: drift at 255
+ADWIN: drift at 260
+ADWIN: drift at 295
+ADWIN, true positive : 3
+
+PH test start....
+.
+Page Hinkley: drift at 202
+KS-test start....
+datalength 401
+Drift detected between 0 to 99 and 100 to 200
+Drift detected between 100 to 199 and 200 to 300
+Drift detected between 200 to 299 and 300 to 400
+3 drifts detected using KS-test
+5 iteration in ks test
+
+ADWIN start....
+
+ADWIN: drift at 220
+ADWIN: drift at 225
+ADWIN: drift at 230
+ADWIN: drift at 235
+ADWIN: drift at 250
+ADWIN: drift at 395
+ADWIN: drift at 400
+ADWIN, true positive : 5
+
+PH test start....
+.
+Page Hinkley: drift at 202
+KS-test start....
+datalength 401
+Drift detected between 0 to 99 and 100 to 200
+Drift detected between 100 to 199 and 200 to 300
+Drift detected between 200 to 299 and 300 to 400
+3 drifts detected using KS-test
+5 iteration in ks test
+
+ADWIN start....
+
+ADWIN: drift at 220
+ADWIN: drift at 225
+ADWIN: drift at 230
+ADWIN: drift at 235
+ADWIN: drift at 260
+ADWIN: drift at 370
+ADWIN: drift at 375
+ADWIN: drift at 390
+ADWIN, true positive : 5
+
+PH test start....
+.
+Page Hinkley: drift at 202
+All drifts detected in 0:00:05.711734
+A [1, 1, 4]
+
+Process finished with exit code 0

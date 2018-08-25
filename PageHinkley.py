@@ -1,4 +1,4 @@
-class Page_Hinkley:
+class PH_test:
     """
     This compute the  page Hinkley test for detecting concept drift.
     Refer to the book  Knowledge discovery and dataScream

@@ -1,5 +1,5 @@
-class PageHinkley:
-    def __init__(self, delta=0.005, lambda_=50, alpha=1 - 0.0001):
+class Hinkley_test:
+    def __init__(self, delta=0.0000005, lambda_=2, alpha=1 - 0.0001):
         """
 
         :param delta: Magnitude of changes
@@ -42,10 +42,14 @@ class PageHinkley:
         # calculate the average and sum
         self.num += 1
         self.x_mean = (x + self.x_mean * (self.num - 1)) / self.num
+        # self.x_mean = self.x_mean + (x + self.x_mean * (self.num - 1)) / self.num
         self.sum = self.sum * self.alpha_ + x - self.x_mean - self.delta
 
-        self.change_detected = True if self.sum > self.lambda_ else False
-        # print("Changed detected from Page_hinkley", self.change_detected)
+        if self.sum > self.lambda_:
+            self.change_detected = True
+        else:
+            self.change_detected = False
+            # print("Changed detected from Page_hinkley", self.change_detected)
         if self.change_detected:
             self.reset_params()
         return self.change_detected
