@@ -1,5 +1,5 @@
 
-from ADWIN.ListNode import *
+from ADWIN_V1.ListNode import *
 class AdwinList:
     def __init__(self, M):
         """

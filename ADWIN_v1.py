@@ -4,7 +4,7 @@ import numpy as np
 class Adwin:
     def __init__(self, datastream, delta = 0.4):
         """
-        The function implements the ADWIN  algorithm, for Drift detection
+        The function implements the ADWIN_V1  algorithm, for Drift detection
         :param datastream: The datastream of Examples
         :param delta: The level of confidence to the detection made
         :return: W, a window of examples

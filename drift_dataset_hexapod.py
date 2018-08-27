@@ -6,7 +6,7 @@ from datetime import datetime
 import scipy.stats as stat
 from PageHinkley import *
 from Page_Hinkley import *
-# from ADWIN.adwin import *
+# from ADWIN_V1.adwin import *
 from test_ADWIN.adwin import *
 from plotting import *
 from cumsum import *
@@ -128,7 +128,7 @@ def kolmogorov_smirnov(data, window_size=100):
     :return: True, False (True : Drift Present, False : Drift Absent)
     """
     # W0 = data[1:window_size]
-    print("KS-test start....")
+    global drift_rejected
     num = 0
     num_iter = 0
     data_length = data.shape[0]
@@ -181,8 +181,9 @@ def kolmogorov_smirnov(data, window_size=100):
         val2 = norm_s2.values
         D_stat, p_value = stat.ks_2samp(val1[:, 0], val2[:, 0])
 
+        drift_rejected = 0   # The number of hypothesis rejected
         # print("Result P vlaue", p_value)
-        if p_value < 0.05: # We reject the Null Hypothesis, so Drfit detected
+        if p_value < 0.05:  # D_stat > 0.04301p_value < 0.05:  # We reject the Null Hypothesis, so Drift detected
             drift = True
             num = num + 1
             if t + window_size < data_length:
@@ -193,9 +194,11 @@ def kolmogorov_smirnov(data, window_size=100):
                                                                             data_length))
         else:
             drift = False
+            drift_rejected +=1
             # print("t value..........{} and data length {}".format(t+window_size, t + 2*window_size))
     print("{} drifts detected using KS-test".format(num))
     print("{} iteration in ks test".format(num_iter))
+    print("{} hypothesis rejected".format(drift_rejected))
     return drift
 
 
@@ -247,6 +250,29 @@ def remove_outlier(datastream, normalized=None):
 def run_drift_detection(data_size, confidence_level):
     return True
 
+
+def get_actual_data(i):
+    name_actual_data = "DP" + str(i)
+
+    if name_actual_data == "DP1":
+        now_data = DP1
+        title_ = name_actual_data + ":{0, 3, 4}" + " (Black Flat vs Flat vs Grass Flat)"
+    elif name_actual_data == "DP2":
+        now_data = DP2
+        title_ = name_actual_data + ":{1, 2, 5}" + " (Black Rough vs Wooden Cubes vs Grass Rough)"
+    elif name_actual_data == "DP3":
+        now_data = DP3
+        title_ = name_actual_data + ":{2, 3}" + " (Wooden Cubes vs Flat)"
+    elif name_actual_data == "DP4":
+        now_data = DP4
+        title_ = name_actual_data + ":{0, 5}" + " (Black Flat vs Grass Rough)"
+    elif name_actual_data == "DP5":
+        now_data = current_bf_pd
+        title_ = name_actual_data + ":{0}" + " (Black Flat)"
+    else:
+        exit(5)
+
+    return now_data, title_
 
 if __name__ == '__main__':
     filepath_bf = 'Hexapod_dataset/black_flat/f_b_1.pow'  # Black_flat
@@ -385,15 +411,13 @@ if __name__ == '__main__':
     #     plt.title(title)
     #     plt.savefig("figure/" + "Terrain{}".format(i) + ".png")
 
-
-
     # # # DP1 : Flat i.e {0, 3, 4}
     start = datetime.now()
     flat = concatenate_data(current_bf_pd, current_flat_pd, window_size=window_size)  # Black Flat vs flat
-    # print("shapeflat", flat.shape)
     DP1 = concatenate_data(current_gf_pd, flat, window_size=200)  # Black Flat vs flat vs Grass Flat
     print("shapeDP1", DP1.shape)
     # print(DP1[400:460])
+
     # # # DP2 : {1, 2, 5}
     rough = concatenate_data(current_br_pd, current_cu_pd)  # Black Rough vs Wooden
     DP2 = concatenate_data(current_gr_pd, rough)
@@ -404,86 +428,182 @@ if __name__ == '__main__':
     DP3 = concatenate_data(current_cu_pd, current_flat_pd)
     print("shapeDP3", DP1.shape)
 
-    # # # DP4 : {0, 5} Black Flat bs grass Rough
+    # # # DP4 : {0, 5} Black Flat vs grass Rough
     DP4 = concatenate_data(current_bf_pd, current_gr_pd)
     print("shapeDP4", DP4.shape)
     print("Concatenation start : {}, end : {} ".format(start, end))
 
-
-    # plt.plot(DP1['current'])
-    # plt.draw()
-    # plt.pause(5)
-
-
     # # # Run the drift detection over DPi, i =  1,...3
     start = datetime.now()
-    delta_adwin = [0.01, 0.03, 0.6, 0.9]
+    delta_adwin = [0.001, 0.03, 0.6, 0.9]  # Values of delta for ADWIN_V1 (confidence value)
     min_len_win = [5, 10, 20, 32]
     adwin = Adwin(delta=1)
-    for delta_i in delta_adwin:
-        adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=5, min_length_window=5, min_length_sub_window=1)
-        PH_ = Hinkley_test()
-        cusum1 = cumsumDM()
+    delta_hinkley = [0.00005, 0.03, 0.6, 0.9]  # Different delta for the PH test (magintude of changes)
+    lambda_hinkley = [5, 25, 50, 75, 100]  # Different lambda Threshold for the PH test
+    ks_window_sizes = [5, 15, 50, 100]  # Different window size for
+    adwin_min_clock = [5, 10, 20, 50, 100]
+    # # # # # # #
+
+
+    cusum1 = cumsumDM()
+
+    ############################################
+    #           ADWIN_V1 results                  #
+    ############################################
+    # print(DP1[0:200])
+    print("######Size of the data {}".format(choose_size))
+    # for delta_i in delta_adwin:
+    #     # adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=5, min_length_window=5, min_length_sub_window=1)
+    #     rand_nber = np.random.randint(0, 5)
+    #     min_clock_val = adwin_min_clock[1]
+    #     adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=min_clock_val, min_length_window=5, min_length_sub_window=1)
+    #     true_drift = 0
+    #     false_drift = 0
+    #     # actual_data = DP1
+    #     print("#######################################################Result for delta = {} and min_clock = {}".format(delta_i, min_clock_val))
+    #     for i in range(1, 6):
+    #         actual_data, title_curve = get_actual_data(i)
+    #
+    #         # print("ADWIN_V1, true positive : {}".format(true_drift))
+    #         # # # # ------> ADWIN_V1
+    #         # print("\n\n")
+    #         print("\nADWIN start for {}.....".format(title_curve))
+    #         index_drift = 0
+    #         actual_data = actual_data['current']
+    #         for dat in actual_data:
+    #             index_drift += 1
+    #             if adwin.set_input(dat):
+    #                 print("ADWIN_V1: drift at {}".format(index_drift))
+    #                 if i == 1:
+    #                     if (150<= index_drift <=250) or (375<= index_drift <=460):
+    #                         true_drift+=1
+    #                     else:
+    #                         false_drift+=1
+    #                 elif i == 2:
+    #                     if (150<= index_drift <=260) or (375<= index_drift <=420):
+    #                         true_drift+=1
+    #                     else:
+    #                         false_drift+=1
+    #                 elif i == 3:
+    #                     if 150<= index_drift <=250:
+    #                         true_drift+=1
+    #                     else:
+    #                         false_drift+=1
+    #                 elif i == 4:
+    #                     if 150 <= index_drift <=250:
+    #                         true_drift+=1
+    #                     else:
+    #                         false_drift+=1
+    #                 elif i == 5:
+    #                     false_drift+=1
+    #             elif i == 5:
+    #                 true_drift+=1
+    #         print("ADWIN_V1 : True Positive {}, False Positive {}".format(true_drift, false_drift))
+    #         true_drift = 0
+    #         false_drift = 0
+    #             # else:
+    #             #     print("pas de drift")
+
+    ############################################
+    #           Page-Hinkley Test results      #
+    ############################################
+
+    print("\n######-------------> Page-Hinley test <-----------#########\n")
+    for lambda_i in lambda_hinkley:
+        rand_delta_hinkley = np.random.randint(0, 4)  # A random number to choose a value of delta for the PH-test
+        delta_test_ph = 0.01
+        PH_ = Hinkley_test(delta=delta_test_ph, lambda_=lambda_i,
+                           alpha=1 - 0.0001)  #1 - 0.0001
+        # PH_2 = PH_test()
         true_drift = 0
         false_drift = 0
-        # actual_data = DP1
-        for i in range(1, 5):
-            name_actual_data = "DP" + str(i)
-
-            if name_actual_data == "DP1":
-                actual_data = DP1
-                title = name_actual_data + ":{0, 3, 4}" + " (Black Flat vs Flat vs Grass Flat)"
-            elif name_actual_data == "DP2":
-                actual_data = DP2
-                title = name_actual_data + ":{1, 2, 5}" + " (Black Rough vs Wooden Cubes vs Grass Rough)"
-            elif name_actual_data == "DP3":
-                actual_data = DP3
-                title = name_actual_data + ":{2, 3}" + " (Wooden Cubes vs Flat)"
-            elif name_actual_data == "DP4":
-                actual_data = DP4
-                title = name_actual_data + ":{0, 5}" + " (Black Flat vs Grass Rough)"
-            else:
-                exit(5)
-
-            # ploting the concatenate current
-                # plotting the concatenations
-            # plt.figure()  # plot in dust
-            # plt.xlabel("time steps")
-            # plt.ylabel("current")
-            # plt.plot(actual_data['current'])
-            # plt.title(title)
-            # plt.savefig("figure/" + name_actual_data + ".png")
-
-            # # # # ------> KS test
-            kolmogorov_smirnov(actual_data, window_size=100)
-
-            # # # # ------> ADWIN
-            print("\nADWIN start....\n")
-            # print("\n\n")
+        print("#######################################################Result for lambda = {} and delta : {}".format(lambda_i, delta_test_ph))
+        for i in range(1, 6):
+            actual_data, title_curve = get_actual_data(i)
+            print("PH-test start for {}.....".format(title_curve))
             index_drift = 0
             actual_data = actual_data['current']
-            for dat in actual_data: # q in range(0, actual_data.shape[0], 1):
-                index_drift += 1
-                if adwin.set_input(dat): # actual_data[q]
-                    print("ADWIN: drift at {}".format(index_drift))
-                    if i==1:
-                        if (200 < index_drift < 300) or (400 < index_drift <500):
-                            true_drift += 1
-
-            print("ADWIN, true positive : {}".format(true_drift))
-            # # # # ------> Page-Hinkley test
-            # print("\n\n")
-            print("\nPH test start....\n.")
-            index_drift = 0
+            # PH_2 = PH_test(actual_data, delta_=delta_test_ph, lambda_=lambda_i, alpha_=1 - 0.0001)
             for dat1 in actual_data:
                 index_drift += 1
                 if PH_.set_input(dat1):
                     print("Page Hinkley: drift at {}".format(index_drift))
-                 # else:
-                 #     print("pas de drift")
+                    if i == 1:
+                        if (150 <= index_drift <= 250) or (375 <= index_drift <= 460):
+                            true_drift += 1
+                        else:
+                            false_drift += 1
+                    elif i == 2:
+                        if (150 <= index_drift <= 260) or (375 <= index_drift <= 420):
+                            true_drift += 1
+                        else:
+                            false_drift += 1
+                    elif i == 3:
+                        if 150 <= index_drift <= 250:
+                            true_drift += 1
+                        else:
+                            false_drift += 1
+                    elif i == 4:
+                        if 150 <= index_drift <= 250:
+                            true_drift += 1
+                        else:
+                            false_drift += 1
+                    elif i == 5:
+                        false_drift += 1
+                elif i == 5:
+                    true_drift += 1
+            print("PH-test : True Positive {}, False Positive {}".format(true_drift, false_drift))
+            true_drift = 0
+            false_drift = 0
+                # else:
+                #     print("pas de drift")
+
+    ############################################
+    #           K-S Test results               #
+    ############################################
+    print("\n######-------------> KS test <-----------#########\n")
+    # for win_i in ks_window_sizes:
+    #     rand_delta_hinkley = np.random.randint(0, 4)  # A random number to choose a value of delta for the PH-test
+    #     true_drift = 0
+    #     false_drift = 0
+    #     print("#######################################################Result for window_size = {}".format(win_i))
+    #     for i in range(1, 6):
+    #         actual_data, title_curve = get_actual_data(i)
+    #         print("\nKS-test start for {}.....".format(title_curve))
+    #         index_drift = 0
+    #         kolmogorov_smirnov(actual_data, window_size=win_i)
+    #
+    # for win in ks_window_sizes:
+    #         # ploting the concatenate current
+    #         # plotting the concatenations
+    #         # plt.figure()  # plot in dust
+    #         # plt.xlabel("time steps")
+    #         # plt.ylabel("current")
+    #         # plt.plot(actual_data['current'])
+    #         # plt.title(title)
+    #         # plt.savefig("figure/" + name_actual_data + ".png")
+    #
+    #         # # # # ------> KS test
+    #         kolmogorov_smirnov(actual_data, window_size=100)
+    #
+    #
+    #
+    #         print("ADWIN_V1, true positive : {}".format(true_drift))
+    #         # # # # ------> Page-Hinkley test
+    #         # print("\n\n")
+    #         print("\nPH test start....\n.")
+    #         index_drift = 0
+    #         for dat1 in actual_data:
+    #             index_drift += 1
+    #             if PH_.set_input(dat1):
+    #                 print("Page Hinkley: drift at {}".format(index_drift))
+    #              # else:
+    #              #     print("pas de drift")
 
     end = datetime.now() - start
     print("All drifts detected in {}".format(end))
+
+
     # # # DP2 :
     # plt.title("Abrupt Drift")
     # plt.xlabel("black Flat")

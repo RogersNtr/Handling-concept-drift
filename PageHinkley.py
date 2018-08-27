@@ -42,8 +42,8 @@ class PH_test:
                 list_average.append(self.average)
             Mt = min(list_average)
             Pht = self.average - Mt # The PH test
-            # if Pht > self.lambda_:
-            if self.average > self.lambda_:
+            if Pht > self.lambda_:
+            #if self.average > self.lambda_:
                 self.isChangeDetected = True
                 # self.reset_params()
                 print("Drift detected at positon : " + str(self.num_iter))

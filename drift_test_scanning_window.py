@@ -67,7 +67,7 @@ def remove_outlier2(input_data):
 
 def ADWIN(datastream, confidence_interval=None):
     """
-    The function implements the ADWIN  algorithm, for Drift detection
+    The function implements the ADWIN_V1  algorithm, for Drift detection
     :param datastream: The datastream of Examples
     :param confidence_interval: The level of confidence to the detection made
     :return: W, a window of examples

@@ -1,6 +1,6 @@
 import numpy as np
 from math import log, sqrt
-from ADWIN.List import *
+from ADWIN_V1.List import *
 
 
 class AdwinAlgo:
