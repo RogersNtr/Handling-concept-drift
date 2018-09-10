@@ -11,7 +11,7 @@ information, check 'Learning from time-changing data with Adaptive Window' from 
 
 ### Page-Hinkey Test
 P-H test is a drift detection algorithm design for gradual changes.
-
+The code has been inspired from : "Knowledge Discovery from Data Streams."
 ### Kolmogorov 
 We have done a light adaptation of the K-s test to the context of Drift detection.
 For a more detailed description of this work. See the master's 1 thesis link to it.
