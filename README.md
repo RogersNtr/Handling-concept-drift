@@ -14,4 +14,4 @@ P-H test is a drift detection algorithm design for gradual changes.
 The code has been inspired from : "Knowledge Discovery from Data Streams."
 ### Kolmogorov 
 We have done a light adaptation of the K-s test to the context of Drift detection.
-For a more detailed description of this work. See the master's 1 thesis link to it.
+For a more detailed description of this work. See the master's 1 thesis link to it [Presentation slides](https://docs.google.com/presentation/d/1sHhPBRP0vLswpTIy46BaCoLnSdbp6TqDp0HQrs9K8p4/edit?usp=sharing)
