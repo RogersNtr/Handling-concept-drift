@@ -1,9 +1,17 @@
 # Handling concept drift in time series datastream of a robot
 
 ## Project Overview
-
+This project is about evaluating drift detection algorithm
+in the context of detecting new terrain of a hexapod robot.
+The dataset consists of six types of terrains : Black Flat, Blacks Rough, Flat, Wooden Cube, Black Rough, Grass Rough 
 ## Content of the repository
 ### ADWIN 
-### Page Hinkey Test
-### Cumsum
+ADWIN is a drift detection algorithm with the based principle of shrinking the window whever a change occurs. For more
+information, check 'Learning from time-changing data with Adaptive Window' from Albert Bifet.
+
+### Page-Hinkey Test
+P-H test is a drift detection algorithm design for gradual changes.
+
 ### Kolmogorov 
+We have done a light adaptation of the K-s test to the context of Drift detection.
+For a more detailed description of this work. See the master's 1 thesis link to it.
