@@ -202,10 +202,6 @@ def kolmogorov_smirnov(data, window_size=100):
     return drift
 
 
-def page_hinkley(data):
-    return 0
-
-
 def norm_(x, min_, max_):
     return (x-min_)/(max_ - min_)
 
@@ -382,34 +378,34 @@ if __name__ == '__main__':
 
     # Plot the current  for each terrain
 
-    # for i in range(7):
-    #     if i == 0:
-    #         actual_current = current_bf_pd
-    #         title = "current on Black Flat(" + str(i) + ") terrain"
-    #     elif i == 1:
-    #         actual_current = current_br_pd
-    #         title = "current on Black Rough(" + str(i) + ") terrain"
-    #     elif i == 2:
-    #         actual_current = current_cu_pd
-    #         title = "current on Cubes(" + str(i) + ") terrain"
-    #     elif i == 3:
-    #         actual_current = current_flat_pd
-    #         title = "current on Flat(" + str(i) + ") terrain"
-    #     elif i == 4:
-    #         actual_current = current_gf_pd
-    #         title = "current on Grass Flat(" + str(i) + ") terrain"
-    #     elif i == 5:
-    #         actual_current = current_gr_pd
-    #         title = "current on Grass Rough(" + str(i) + ") terrain"
-    #     else:
-    #         print("something wrong happen when ploting each current terrain")
-    #
-    #     plt.figure()
-    #     plt.xlabel("time steps")
-    #     plt.ylabel("current")
-    #     plt.plot(actual_current['current'])
-    #     plt.title(title)
-    #     plt.savefig("figure/" + "Terrain{}".format(i) + ".png")
+    for i in range(7):
+        if i == 0:
+            actual_current = current_bf_pd
+            title = "current on Black Flat(" + str(i) + ") terrain"
+        elif i == 1:
+            actual_current = current_br_pd
+            title = "current on Black Rough(" + str(i) + ") terrain"
+        elif i == 2:
+            actual_current = current_cu_pd
+            title = "current on Cubes(" + str(i) + ") terrain"
+        elif i == 3:
+            actual_current = current_flat_pd
+            title = "current on Flat(" + str(i) + ") terrain"
+        elif i == 4:
+            actual_current = current_gf_pd
+            title = "current on Grass Flat(" + str(i) + ") terrain"
+        elif i == 5:
+            actual_current = current_gr_pd
+            title = "current on Grass Rough(" + str(i) + ") terrain"
+        else:
+            print("something wrong happen when ploting each current terrain")
+
+        plt.figure()
+        plt.xlabel("time steps")
+        plt.ylabel("current")
+        plt.plot(actual_current['current'])
+        plt.title(title)
+        plt.savefig("figure/" + "Terrain{}".format(i) + ".png")
 
     # # # DP1 : Flat i.e {0, 3, 4}
     start = datetime.now()
@@ -435,7 +431,7 @@ if __name__ == '__main__':
 
     # # # Run the drift detection over DPi, i =  1,...3
     start = datetime.now()
-    delta_adwin = [0.001, 0.03, 0.6, 0.9]  # Values of delta for ADWIN_V1 (confidence value)
+    delta_adwin = [0.001, 0.3, 2, 4]  # Values of delta for ADWIN_V1 (confidence value)
     min_len_win = [5, 10, 20, 32]
     adwin = Adwin(delta=1)
     delta_hinkley = [0.00005, 0.03, 0.6, 0.9]  # Different delta for the PH test (magintude of changes)
@@ -452,57 +448,57 @@ if __name__ == '__main__':
     ############################################
     # print(DP1[0:200])
     print("######Size of the data {}".format(choose_size))
-    # for delta_i in delta_adwin:
-    #     # adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=5, min_length_window=5, min_length_sub_window=1)
-    #     rand_nber = np.random.randint(0, 5)
-    #     min_clock_val = adwin_min_clock[1]
-    #     adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=min_clock_val, min_length_window=5, min_length_sub_window=1)
-    #     true_drift = 0
-    #     false_drift = 0
-    #     # actual_data = DP1
-    #     print("#######################################################Result for delta = {} and min_clock = {}".format(delta_i, min_clock_val))
-    #     for i in range(1, 6):
-    #         actual_data, title_curve = get_actual_data(i)
-    #
-    #         # print("ADWIN_V1, true positive : {}".format(true_drift))
-    #         # # # # ------> ADWIN_V1
-    #         # print("\n\n")
-    #         print("\nADWIN start for {}.....".format(title_curve))
-    #         index_drift = 0
-    #         actual_data = actual_data['current']
-    #         for dat in actual_data:
-    #             index_drift += 1
-    #             if adwin.set_input(dat):
-    #                 print("ADWIN_V1: drift at {}".format(index_drift))
-    #                 if i == 1:
-    #                     if (150<= index_drift <=250) or (375<= index_drift <=460):
-    #                         true_drift+=1
-    #                     else:
-    #                         false_drift+=1
-    #                 elif i == 2:
-    #                     if (150<= index_drift <=260) or (375<= index_drift <=420):
-    #                         true_drift+=1
-    #                     else:
-    #                         false_drift+=1
-    #                 elif i == 3:
-    #                     if 150<= index_drift <=250:
-    #                         true_drift+=1
-    #                     else:
-    #                         false_drift+=1
-    #                 elif i == 4:
-    #                     if 150 <= index_drift <=250:
-    #                         true_drift+=1
-    #                     else:
-    #                         false_drift+=1
-    #                 elif i == 5:
-    #                     false_drift+=1
-    #             elif i == 5:
-    #                 true_drift+=1
-    #         print("ADWIN_V1 : True Positive {}, False Positive {}".format(true_drift, false_drift))
-    #         true_drift = 0
-    #         false_drift = 0
-    #             # else:
-    #             #     print("pas de drift")
+    for delta_i in delta_adwin:
+        # adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=5, min_length_window=5, min_length_sub_window=1)
+        rand_nber = np.random.randint(0, 5)
+        min_clock_val = adwin_min_clock[1]
+        adwin = Adwin(delta=delta_i, max_buckets=5, min_clock=min_clock_val, min_length_window=5, min_length_sub_window=1)
+        true_drift = 0
+        false_drift = 0
+        # actual_data = DP1
+        print("#######################################################Result for delta = {} and min_clock = {}".format(delta_i, min_clock_val))
+        for i in range(1, 6):
+            actual_data, title_curve = get_actual_data(i)
+
+            # print("ADWIN_V1, true positive : {}".format(true_drift))
+            # # # # ------> ADWIN_V1
+            # print("\n\n")
+            print("\nADWIN start for {}.....".format(title_curve))
+            index_drift = 0
+            actual_data = actual_data['current']
+            for dat in actual_data:
+                index_drift += 1
+                if adwin.set_input(dat):
+                    print("ADWIN_V1: drift at {}".format(index_drift))
+                    if i == 1:
+                        if (150<= index_drift <=250) or (375<= index_drift <=460):
+                            true_drift+=1
+                        else:
+                            false_drift+=1
+                    elif i == 2:
+                        if (150<= index_drift <=260) or (375<= index_drift <=420):
+                            true_drift+=1
+                        else:
+                            false_drift+=1
+                    elif i == 3:
+                        if 150<= index_drift <=250:
+                            true_drift+=1
+                        else:
+                            false_drift+=1
+                    elif i == 4:
+                        if 150 <= index_drift <=250:
+                            true_drift+=1
+                        else:
+                            false_drift+=1
+                    elif i == 5:
+                        false_drift+=1
+                elif i == 5:
+                    true_drift+=1
+            print("ADWIN_V1 : True Positive {}, False Positive {}".format(true_drift, false_drift))
+            true_drift = 0
+            false_drift = 0
+                # else:
+                #     print("pas de drift")
 
     ############################################
     #           Page-Hinkley Test results      #
@@ -526,7 +522,7 @@ if __name__ == '__main__':
             # PH_2 = PH_test(actual_data, delta_=delta_test_ph, lambda_=lambda_i, alpha_=1 - 0.0001)
             for dat1 in actual_data:
                 index_drift += 1
-                if PH_.set_input(dat1):
+                if PH_.set_data(dat1):
                     print("Page Hinkley: drift at {}".format(index_drift))
                     if i == 1:
                         if (150 <= index_drift <= 250) or (375 <= index_drift <= 460):
@@ -562,17 +558,17 @@ if __name__ == '__main__':
     #           K-S Test results               #
     ############################################
     print("\n######-------------> KS test <-----------#########\n")
-    # for win_i in ks_window_sizes:
-    #     rand_delta_hinkley = np.random.randint(0, 4)  # A random number to choose a value of delta for the PH-test
-    #     true_drift = 0
-    #     false_drift = 0
-    #     print("#######################################################Result for window_size = {}".format(win_i))
-    #     for i in range(1, 6):
-    #         actual_data, title_curve = get_actual_data(i)
-    #         print("\nKS-test start for {}.....".format(title_curve))
-    #         index_drift = 0
-    #         kolmogorov_smirnov(actual_data, window_size=win_i)
-    #
+    for win_i in ks_window_sizes:
+        rand_delta_hinkley = np.random.randint(0, 4)  # A random number to choose a value of delta for the PH-test
+        true_drift = 0
+        false_drift = 0
+        print("#######################################################Result for window_size = {}".format(win_i))
+        for i in range(1, 6):
+            actual_data, title_curve = get_actual_data(i)
+            print("\nKS-test start for {}.....".format(title_curve))
+            index_drift = 0
+            kolmogorov_smirnov(actual_data, window_size=win_i)
+
     # for win in ks_window_sizes:
     #         # ploting the concatenate current
     #         # plotting the concatenations

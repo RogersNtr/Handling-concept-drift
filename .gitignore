@@ -4,3 +4,7 @@ venv
 .idea
 __pycache__/
 Page_Hinkley.py
+figure/
+find_combination.py
+input.csv
+itineraries_results.csv

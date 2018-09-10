@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 import statistics as stats
 from Page_Hinkley import *
+from test_ADWIN.adwin_list import *
+from test_ADWIN.adwin import *
+from test_ADWIN.adwin_list_item import *
 
 
 
@@ -210,32 +213,36 @@ def generate_artificial_dataset(datastream, pause_=None, drift_type='virtual'):
     data_mean_GCAG = data_mean_GCAG.tolist()  # Convert to list, to later convert to DataFrame
     data_mean_GCAG = pd.DataFrame(data_mean_GCAG)  #
 
-    # Adding the last index to the mean column extracted
+    # Adding the last index to the 'mean' column extracted
     # index = [j for j in range(data_mean_GCAG.shape[0])]
     # data_mean_GCAG['index'] = index
     # data_mean_GCAG = data_mean_GCAG.reindex(index)
     # print('data', data_mean_GCAG.shape[0])
-    ##print(data_mean_GCAG)
+    # # print(data_mean_GCAG)
 
     # # # GISTEMP data
     # data_mean_GISTEMP = data_GISTEMP['Mean'][result_GISTEMP]
     # data_date_GISTEMP = data_GISTEMP['Date'][result_GISTEMP]
 
-    # # --Plotting the original data
+    # --Plotting the original data
     # plt.figure(1)
-    # plt.plot(data_mean_GCAG)
-    # plt.title("Original Data with outliers removes")
+    # plt.plot(data_GCAG['Mean'])
+    # plt.title("Original Data with outliers")
     # plt.ylabel("Mean temperature distribution")
+    # plt.savefig("figure/" + "outliers_present"+".png")
     # plt.draw()
-    # plt.pause(20)
+    # plt.pause(10)
 
-    # # ---Plotting to see how it looks.
+    # ---Plotting to see how it looks.
     # plt.figure(2)
     # plt.plot(data_mean_GCAG)
     # plt.title("After removing outliers... using label type")
+    # plt.savefig("figure/" + "outlier_absent"+".png")
     # plt.draw()
-    # plt.pause(20)
+    # plt.pause(10)
 
+    print("with outliers", data_GCAG['Mean'].shape)
+    print("without outliers", data_mean_GCAG.shape)
     # Concatenating the actual datastream with the Sinus function
     x = np.linspace(-np.pi, np.pi, 644)
 
@@ -250,7 +257,7 @@ def generate_artificial_dataset(datastream, pause_=None, drift_type='virtual'):
         sin_template = sigmoid(val)
     y = -x + 1; min_y = np.min(y); max_y = np.max(y)
     y = [(item - min_y)/(max_y - min_y) for item in y ]
-    print("Poumffffffffffffffffff",len(y))
+    print("Poumffffffffffffffffff", len(y))
     # print(sin_template)
 
     sin_template = list(sin_template)
@@ -290,19 +297,36 @@ def generate_artificial_dataset(datastream, pause_=None, drift_type='virtual'):
     # data_mean_GCAG = pd.DataFrame(data_mean_GCAG)
 
     # Plot the merge data
-    if pause_ is None:
-        plt.figure()
-        plt.plot(data_mean_GCAG)
-        plt.title('Gradual change')
-        plt.draw()
-        plt.show()
-    else:
-        plt.figure()
-        plt.plot(data_mean_GCAG)
-        plt.draw()
-        plt.pause(pause_)
+
     # plt.pause(5)
     return data_mean_GCAG
+
+
+def plot_graph(data_to_plot, list_of_drift_points, delta_val, pause_=None):
+    if pause_ is None:
+        plt.figure()
+        plt.plot(data_to_plot)
+        plt.title('Drift detection illustration' + ':delta='+str(delta_val))
+
+        for drift_point in list_of_drift_points:
+            plt.axvline(x=drift_point, color='r')
+        plt.legend(('Data', 'Drift points'))  #, loc='upper right')
+        plt.xlabel('time steps')
+        plt.ylabel('temperature')
+        plt.draw()
+        plt.savefig("figure/" + "drift_detected_points_artificial_delta" + str(delta_val) +  ".png")
+        # plt.show()
+    else:
+        plt.figure()
+        plt.plot(data_to_plot)
+        plt.title('Gradual change')
+        plt.xlabel('time steps')
+        plt.ylabel('temperature')
+        plt.legend(('Data', 'Drift points'))
+        for drift_point in list_of_drift_points:
+            plt.axvline(x=drift_point, color='r')  # Add a vertical line where the drift was detected
+        plt.draw()
+        plt.pause(pause_)
 
 
 if __name__ == '__main__':
@@ -321,9 +345,19 @@ if __name__ == '__main__':
 
     # # Testing ADWIN
     print(data_mean.shape)
-    # mean_w = ADWIN(data_mean)
-    # print(mean_w)
-
+    # adwin_ = Adwin()
+    delta_test_adwin = [0.01, 0.4, 1, 4, 6]
+    for delta_i in delta_test_adwin:
+        adwin_ = Adwin(delta=delta_i)  #  max_buckets=100, min_length_sub_window=25, min_length_window=50)#, max_buckets=5, min_clock=5, min_length_window=5, min_length_sub_window=1)
+        drift_index = 0
+        list_of_drift_indexes = []  # contrains a list of drift indexes detected
+        for input_i in data_mean[:, 0]:
+            # print(type(input_i))
+            drift_index += 1
+            if adwin_.set_input(input_i):
+                list_of_drift_indexes.append(drift_index)
+                print("drift detected at {}".format(drift_index))
+        plot_graph(data_mean, list_of_drift_indexes, delta_i)
     # # Testing Kolmogorov-Smirnov
     sample2 = data_mean[2639:3284, 0]
     # Sample1 = data_mean[1639:2639, 0]
@@ -333,7 +367,7 @@ if __name__ == '__main__':
     # plt.plot(sample1)
     # plt.show()
 
-    kolmogorov_smirnov(data_mean[:, 0])
+    # kolmogorov_smirnov(data_mean)
 
     # # Testing the Page Hinkley statistic test
     # pg_hinkley = PageHinkley()

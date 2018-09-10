@@ -3,17 +3,15 @@ class Hinkley_test:
         """
 
         :param delta: Magnitude of changes
-        :param lambda_: the threshold to detect drift
+        :param lambda_: a threshold related to the FAR that is allowed and hence to detect drift.
         :param alpha: the weight of a given element in the datastream (a.k.a fading factor)
         """
         self.delta = delta
         self.lambda_ = lambda_
         self.alpha_ = alpha
-        self.sum = 0
-        # incrementally calculated mean of input data
-        self.x_item_mean = 0
-        # number of  values in the data stream
-        self.num = 0
+        self.average = 0
+        self.x_item_mean = 0   # this represent, the mean at each iteration
+        self.num_iter = 0  # Number of iteration done so far.
         self.is_change_detected = False
 
     def reset_parameters_(self):
@@ -21,31 +19,30 @@ class Hinkley_test:
         Reset the parameters, each time a drift has been detected
         :return:
         """
-        self.num = 0
+        self.num_iter = 0
         self.x_item_mean = 0
-        self.sum = 0
+        self.average = 0
 
-    def set_input(self, x):
+    def set_data(self, x_item):
         """
-        It helps to incrementally add a value to the PH-test and check for each value added, if there is a drift or not
-        :param x: value from the data stream
-        :return: boolean, isChangeDetected or not in the datastream
+        Incrementally add a value to the PH-test and directly check for drift as far as at item is added.
+        :param x_item: value or instance add from the datastream
+        :return: boolean, True if a change occurred in the data stream, False otherwise.
         """
-        self.detect_drift_(x)
+        self.detect_drift_(x_item)
         return self.is_change_detected
 
-    def detect_drift_(self, x):
+    def detect_drift_(self, x_item):
         """
-        Concept drift detection following the formula from 'Knowledge Discovery from Data Streams' by João Gamma (p. 76)
-        :param x: input data
+        Concept drift detection from 'Knowledge Discovery from Data Streams' by João Gamma (p. 76)
+        :param x_item: input data
         """
-        # calculate the average and sum
-        self.num += 1
-        self.x_item_mean = (x + self.x_item_mean * (self.num - 1)) / self.num
+        self.num_iter += 1
+        self.x_item_mean = (x_item + self.x_item_mean * (self.num_iter - 1)) / self.num_iter
         # self.x_mean = self.x_mean + (x + self.x_mean * (self.num - 1)) / self.num
-        self.sum = self.sum * self.alpha_ + x - self.x_item_mean - self.delta
+        self.average = self.average * self.alpha_ + x_item - self.x_item_mean - self.delta
 
-        if self.sum > self.lambda_:
+        if self.average > self.lambda_:
             self.is_change_detected = True
         else:
             self.is_change_detected = False
@@ -55,5 +52,8 @@ class Hinkley_test:
         return self.is_change_detected
 
     def point_of_drift(self):
-        return self.num
+        """
+        :return: position of the drift (where the drift occurs)
+        """
+        return self.num_iter
 

@@ -1,3 +1,3 @@
 from test_ADWIN.adwin_list_item import AdwinListItem
-from test_ADWIN.List import AdwinList
-from ADWIN_V1.adwin import AdwinAlgo
+from test_ADWIN.adwin_list import AdwinList
+from test_ADWIN.adwin import Adwin
