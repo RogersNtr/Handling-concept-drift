@@ -7,7 +7,8 @@ The dataset consists of six types of terrains : Black Flat, Blacks Rough, Flat, 
 ## Content of the repository
 ### ADWIN 
 ADWIN is a drift detection algorithm with the based principle of shrinking the window whever a change occurs. For more
-information, check 'Learning from time-changing data with Adaptive Window' from Albert Bifet.
+information, check 'Learning from time-changing data with Adaptive Window' from Albert Bifet. The code is inspired from the C++ version written by the author and available at : https://github.com/abifet/adwin/tree/master/C%2B%2B
+
 
 ### Page-Hinkey Test
 P-H test is a drift detection algorithm design for gradual changes.
